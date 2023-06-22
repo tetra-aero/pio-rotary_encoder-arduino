@@ -1,0 +1,7 @@
+.pio
+.clang_complete
+.ccls
+
+*~
+.env/
+.envrc
