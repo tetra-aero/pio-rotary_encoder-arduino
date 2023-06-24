@@ -18,7 +18,7 @@ namespace
     A0B1 = STATE_BIT_PHASE_B,
     A1B1 = STATE_BIT_PHASE_A | STATE_BIT_PHASE_B
   } State;
-  State volatile previous = A0B0;
+  State previous = A0B0;
   State volatile current  = A0B0;
   State cw_to[4]  = { A1B0, A1B1, A0B0, A0B1 };
   State ccw_to[4] = { A0B1, A0B0, A1B1, A1B0 };
@@ -36,6 +36,18 @@ namespace
     char b = current & STATE_BIT_PHASE_B ? 'B' : 'b';
     sprintf(buf, "%c%c %d\n", a, b, counter);
     Serial.print(buf);
+  }
+  void showClick(char direction)
+  {
+    static uint8_t column;
+    sprintf(buf, "%c", direction);
+    Serial.print(buf);
+    column++;
+    if (column > 80)
+      {
+        column = 0;
+        Serial.println();
+      }
   }
 }
 
@@ -56,22 +68,19 @@ void loop()
   static unsigned long last_step_ms;
   if (millis() - last_step_ms < debounce_timer_ms)
     { return; }
-  if (!state_updated)
+  else if (!state_updated)
     { return; }
-  if (current == cw_to[previous])
+  else if (current == cw_to[previous])
     {
-      showState();
-      counter++;
+      if (previous==A0B0) showClick('+');
       previous = current;
       last_step_ms = millis();
-      state_updated = false;
     }
-  else if (current == ccw_to[previous])
+    else if (current == ccw_to[previous])
     {
-      showState();
-      counter--; 
+      if (previous==A1B0) showClick('-');
+      previous = current;
+      last_step_ms = millis();
     }
-  previous = current;
-  last_step_ms = millis();
-  state_updated = false;
+    state_updated = false;
 }
