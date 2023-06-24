@@ -4,37 +4,36 @@ namespace
 {
   const uint8_t pinA = 2;
   const uint8_t pinB = 3;
+  int8_t counter = 0;
   char  buf[20];
 
+  const uint8_t STATE_BIT_CLEARED = 0;
+  const uint8_t STATE_BIT_PHASE_A = 1;
+  const uint8_t STATE_BIT_PHASE_B = 2;
+  volatile bool state_updated;
   typedef enum : uint8_t {
-    STATE_BIT_UNSET   = 0,
-    STATE_BIT_A       = 1,
-    STATE_BIT_B       = 2,
-    STATE_BIT_UPDATED = 128
+    A0B0 = STATE_BIT_CLEARED,
+    A1B0 = STATE_BIT_PHASE_A,
+    A0B1 = STATE_BIT_PHASE_B,
+    A1B1 = STATE_BIT_PHASE_A | STATE_BIT_PHASE_B
   } State;
-  volatile State state = STATE_BIT_UNSET;
-  
-  typedef enum {
-    A0B0 = 0x0,
-    A1B0 = 0x1,
-    A0B1 = 0x2,
-    A1B1 = 0x3
-  } Phase;
-  Phase next_phase_cw[4]  = { A1B0, A1B1, A0B0, A0B1 };
-  Phase next_phase_ccw[4] = { A0B1, A0B0, A1B1, A1B0 };
+  State volatile previous = A0B0;
+  State volatile current  = A0B0;
+  State cw_to[4]  = { A1B0, A1B1, A0B0, A0B1 };
+  State ccw_to[4] = { A0B1, A0B0, A1B1, A1B0 };
 
   void handlePinAB()
   {
-    digitalRead(pinA) ? state |= STATE_BIT_A : state &= ~STATE_BIT_A;
-    digitalRead(pinB) ? state |= STATE_BIT_B : state &= ~STATE_BIT_B;
-    state |= STATE_BIT_UPDATED;
+    digitalRead(pinA) ? current |= STATE_BIT_PHASE_A : current &= ~STATE_BIT_PHASE_A;
+    digitalRead(pinB) ? current |= STATE_BIT_PHASE_B : current &= ~STATE_BIT_PHASE_B;
+    state_updated = true;
   }
 
   void showState()
   {
-    char a = state & STATE_BIT_A ? 'A' : 'a';
-    char b = state & STATE_BIT_B ? 'B' : 'b';
-    sprintf(buf, "%c%c\n", a, b);
+    char a = current & STATE_BIT_PHASE_A ? 'A' : 'a';
+    char b = current & STATE_BIT_PHASE_B ? 'B' : 'b';
+    sprintf(buf, "%c%c %d\n", a, b, counter);
     Serial.print(buf);
   }
 }
@@ -53,11 +52,25 @@ void setup()
 
 void loop()
 {
-  if (!(state & STATE_BIT_UPDATED))
+  if (!state_updated)
     { ; }
+  else if (current == cw_to[previous])
+    {
+      showState();
+      counter++;
+      previous = current;
+      state_updated = false;
+    }
+  else if (current == ccw_to[previous])
+    {
+      showState();
+      counter--; 
+      previous = current;
+      state_updated = false;
+    }
   else
     {
       showState();
-      state &= ~STATE_BIT_UPDATED;
+      state_updated = false;
     }
 }
