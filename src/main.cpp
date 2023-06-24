@@ -4,6 +4,7 @@ namespace
 {
   const uint8_t pinA = 2;
   const uint8_t pinB = 3;
+  const uint8_t debounce_timer_ms = 3;
   int8_t counter = 0;
   char  buf[20];
 
@@ -52,25 +53,25 @@ void setup()
 
 void loop()
 {
+  static unsigned long last_step_ms;
+  if (millis() - last_step_ms < debounce_timer_ms)
+    { return; }
   if (!state_updated)
-    { ; }
-  else if (current == cw_to[previous])
+    { return; }
+  if (current == cw_to[previous])
     {
       showState();
       counter++;
       previous = current;
+      last_step_ms = millis();
       state_updated = false;
     }
   else if (current == ccw_to[previous])
     {
       showState();
       counter--; 
-      previous = current;
-      state_updated = false;
     }
-  else
-    {
-      showState();
-      state_updated = false;
-    }
+  previous = current;
+  last_step_ms = millis();
+  state_updated = false;
 }
