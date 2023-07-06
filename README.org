@@ -2,6 +2,7 @@
 STARTUP: indent logdrawer showstars inlineimages
 * circuit
 [[file:img/breadboard.jpg]]
+[[file:img/circuit.png]]
 * Installation
 Install platformio in a local environment
 #+begin_example
