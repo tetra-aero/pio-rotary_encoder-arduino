@@ -1,10 +1,11 @@
 #include <Arduino.h>
+#include <Keyboard.h>
 
 namespace
 {
   const uint8_t pinA = 2;
   const uint8_t pinB = 3;
-  const uint8_t debounce_timer_ms = 3;
+  const uint8_t debounce_timer_ms = 0;
   int8_t counter = 0;
   char  buf[20];
 
