@@ -50,6 +50,10 @@ namespace
         Serial.println();
       }
   }
+  void sendKeySym(uint8_t key)
+  {
+    Keyboard.write(key);
+  }
 }
 
 void setup()
@@ -73,13 +77,13 @@ void loop()
     { return; }
   else if (current == cw_to[previous])
     {
-      if (previous==A0B0) showClick('+');
+      if (previous==A0B0) sendKeySym('.');
       previous = current;
       last_step_ms = millis();
     }
     else if (current == ccw_to[previous])
     {
-      if (previous==A1B0) showClick('-');
+      if (previous==A1B0) sendKeySym(',');
       previous = current;
       last_step_ms = millis();
     }
