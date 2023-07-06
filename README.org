@@ -1,3 +1,7 @@
+;; -*- coding: utf-8; -*-
+STARTUP: indent logdrawer showstars inlineimages
+* circuit
+[[file:img/breadboard.jpg]]
 * Installation
 Install platformio in a local environment
 #+begin_example
